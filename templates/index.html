@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Movie Expert Recommender</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #141414; color: white; padding: 40px; }
+        .form-panel { background: #222; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        .grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .card { background: #333; padding: 15px; border-radius: 6px; width: 250px; margin: 10px; position: relative;}
+        .badge { position: absolute; top: 10px; right: 10px; background: #E50914; padding: 5px; font-size: 12px; font-weight: bold; border-radius: 4px;}
+        input[type="submit"] { background: #E50914; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px;}
+    </style>
+</head>
+<body>
+    <h2>🎬 Movie Recommendation Expert System</h2>
+    
+    <div class="form-panel">
+        <form method="POST">
+            <h3>Select Mood Filters</h3>
+            <div class="grid">
+                <div>
+                    <strong>Genres:</strong><br>
+                    <input type="checkbox" name="genres" value="Sci-Fi"> Sci-Fi
+                    <input type="checkbox" name="genres" value="Thriller"> Thriller
+                </div>
+                <div>
+                    <strong>Era:</strong>
+                    <select name="era">
+                        <option value="90s">1990s</option>
+                        <option value="2000s">2000s</option>
+                        <option value="Modern">Modern (&ge; 2010)</option>
+                    </select>
+                </div>
+                <div>
+                    <strong>Max Runtime (mins):</strong>
+                    <input type="range" name="runtime" min="60" max="200" value="150" oninput="this.nextElementSibling.value = this.value">
+                    <output>150</output> mins
+                </div>
+            </div>
+            <input type="submit" value="Find Recommendations">
+        </form>
+    </div>
+
+    {% if results is not none %}
+        <h3>Recommended Titles Matching Your Taste</h3>
+        <div class="grid">
+            {% for movie in results %}
+                <div class="card">
+                    <span class="badge">{{ movie.match }}% Match</span>
+                    <h4>{{ movie.title }} ({{ movie.year }})</h4>
+                    <p><strong>Rating:</strong> ⭐ {{ movie.rating }}/10</p>
+                    <p><strong>Runtime:</strong> {{ movie.runtime }} mins</p>
+                    <p><small>{{ movie.plot }}</small></p>
+                </div>
+            {% else %}
+                <p>No titles found matching those specific strict constraint boundaries. Try relaxing your parameters!</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</body>
+</html>
