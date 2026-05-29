@@ -1,39 +1,79 @@
 import sqlite3
+import csv
+import re
 
-def init_db():
+def init_netflix_db():
     conn = sqlite3.connect('movies.db')
     cursor = conn.cursor()
     
-    # Create movies table matching Task 1 design
+    # Existing baseline structure drop and recreate rules
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS movies (
+        DROP TABLE IF EXISTS movies
+    ''')
+    cursor.execute('''
+        CREATE TABLE movies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            type TEXT,
             title TEXT NOT NULL,
-            genres TEXT NOT NULL,
-            release_year INTEGER NOT NULL,
-            runtime_minutes INTEGER NOT NULL,
-            rating REAL DEFAULT 0.0,
+            genres TEXT,
+            release_year INTEGER,
+            runtime_minutes INTEGER,
+            rating REAL,
             plot_summary TEXT
         )
     ''')
     
-    # Seed sample datasets
-    sample_movies = [
-        ("The Matrix", "Sci-Fi, Thriller", 1999, 136, 8.7, "A computer hacker learns from mysterious rebels about the true nature of his reality."),
-        ("Inception", "Sci-Fi, Thriller", 2010, 148, 8.8, "A thief who steals corporate secrets through the use of dream-sharing technology."),
-        ("Minority Report", "Sci-Fi, Thriller", 2002, 145, 7.6, "In a future where a special police unit can arrest killers before they commit their crimes, an officer is himself accused."),
-        ("Pulp Fiction", "Thriller", 1994, 154, 8.9, "The lives of two mob hitmen, a boxer, a gangster and his wife intertwine."),
-        ("Interstellar", "Sci-Fi", 2014, 169, 8.7, "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.")
-    ]
-    
-    cursor.executemany('''
-        INSERT INTO movies (title, genres, release_year, runtime_minutes, rating, plot_summary)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', sample_movies)
-    
-    conn.commit()
+    # Reading Kaggle's netflix_titles.csv data stream
+    try:
+        with open('netflix_titles.csv', mode='r', encoding='utf-8') as file:
+            csv_reader = csv.DictReader(file)
+            movies_to_insert = []
+            
+            # Simulated dummy rating generation baseline
+            base_rating = 7.2 
+            
+            for row in csv_reader:
+                # 1. Safe parsing boundary for runtime details
+                duration_str = row.get('duration', '')
+                runtime = 90 # Guaranteed default fallback initialization
+                
+                if duration_str:
+                    if 'min' in duration_str:
+                        minutes = re.findall(r'\d+', duration_str)
+                        if minutes:
+                            runtime = int(minutes[0])
+                    elif 'Season' in duration_str:
+                        seasons = re.findall(r'\d+', duration_str)
+                        if seasons:
+                            runtime = int(seasons[0]) * 45 # approximating 45 mins per episode
+                
+                # 2. Dynamic iteration shifting baseline score
+                base_rating = round((base_rating + 0.1) if base_rating < 9.4 else 6.1, 1)
+                
+                # 3. Clean string checks to append records securely
+                movies_to_insert.append((
+                    row.get('type', 'Movie'),
+                    row.get('title', 'Unknown Title'),
+                    row.get('listed_in', 'General'), 
+                    int(row['release_year']) if row.get('release_year') and row['release_year'].isdigit() else 2000,
+                    runtime,
+                    base_rating,
+                    row.get('description', 'No plot summary available.')
+                ))
+            
+            # Efficient block transaction insertion execution
+            cursor.executemany('''
+                INSERT INTO movies (type, title, genres, release_year, runtime_minutes, rating, plot_summary)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', movies_to_insert)
+            
+            conn.commit()
+            print(f"Success! {len(movies_to_insert)} Netflix records structured into Knowledge Base.")
+            
+    except FileNotFoundError:
+        print("Error: Please make sure 'netflix_titles.csv' file is kept inside this same directory path.")
+        
     conn.close()
-    print("Knowledge base synchronized successfully.")
 
 if __name__ == '__main__':
-    init_db()
+    init_netflix_db()
