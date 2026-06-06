@@ -130,6 +130,23 @@
         .text-glow {
             text-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
         }
+        
+        /* Lenis Smooth Scroll Styles */
+        html.lenis, html.lenis body {
+            height: auto;
+        }
+        .lenis.lenis-smooth {
+            scroll-behavior: auto !important;
+        }
+        .lenis.lenis-smooth [data-lenis-prevent] {
+            overscroll-behavior: contain;
+        }
+        .lenis.lenis-stopped {
+            overflow: hidden;
+        }
+        .lenis.lenis-scrolling iframe {
+            pointer-events: none;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -152,6 +169,10 @@
             <span class="material-symbols-outlined {% if active_page == 'home' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'home' %}1{% else %}0{% endif %};">home</span>
             <span class="font-body-md text-body-md">Home</span>
         </a>
+        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'dashboard' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/dashboard">
+            <span class="material-symbols-outlined {% if active_page == 'dashboard' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'dashboard' %}1{% else %}0{% endif %};">dashboard</span>
+            <span class="font-body-md text-body-md">Dashboard</span>
+        </a>
         <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'genres' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/genres">
             <span class="material-symbols-outlined {% if active_page == 'genres' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'genres' %}1{% else %}0{% endif %};">movie_filter</span>
             <span class="font-body-md text-body-md">Genres</span>
@@ -159,6 +180,10 @@
         <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'eras' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/eras">
             <span class="material-symbols-outlined {% if active_page == 'eras' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'eras' %}1{% else %}0{% endif %};">history_toggle_off</span>
             <span class="font-body-md text-body-md">Eras</span>
+        </a>
+        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'chatbot' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/chatbot">
+            <span class="material-symbols-outlined {% if active_page == 'chatbot' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'chatbot' %}1{% else %}0{% endif %};">forum</span>
+            <span class="font-body-md text-body-md">AI Chatbot</span>
         </a>
         <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'watchlist' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/watchlist">
             <span class="material-symbols-outlined {% if active_page == 'watchlist' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'watchlist' %}1{% else %}0{% endif %};">bookmark</span>
@@ -218,13 +243,17 @@
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'home' %}1{% else %}0{% endif %};">home</span>
         <span class="text-[10px] {% if active_page == 'home' %}font-bold{% else %}font-medium{% endif %}">Home</span>
     </a>
+    <a class="flex flex-col items-center gap-1 {% if active_page == 'dashboard' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/dashboard">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'dashboard' %}1{% else %}0{% endif %};">dashboard</span>
+        <span class="text-[10px] {% if active_page == 'dashboard' %}font-bold{% else %}font-medium{% endif %}">Dash</span>
+    </a>
     <a class="flex flex-col items-center gap-1 {% if active_page == 'genres' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/genres">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'genres' %}1{% else %}0{% endif %};">movie_filter</span>
         <span class="text-[10px] {% if active_page == 'genres' %}font-bold{% else %}font-medium{% endif %}">Explore</span>
     </a>
-    <a class="flex flex-col items-center gap-1 {% if active_page == 'eras' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/eras">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'eras' %}1{% else %}0{% endif %};">history_toggle_off</span>
-        <span class="text-[10px] {% if active_page == 'eras' %}font-bold{% else %}font-medium{% endif %}">Eras</span>
+    <a class="flex flex-col items-center gap-1 {% if active_page == 'chatbot' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/chatbot">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'chatbot' %}1{% else %}0{% endif %};">forum</span>
+        <span class="text-[10px] {% if active_page == 'chatbot' %}font-bold{% else %}font-medium{% endif %}">AI Chat</span>
     </a>
     <a class="flex flex-col items-center gap-1 {% if active_page == 'watchlist' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/watchlist">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'watchlist' %}1{% else %}0{% endif %};">bookmark</span>
@@ -232,8 +261,31 @@
     </a>
 </nav>
 
+<!-- Lenis Smooth Scroll -->
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.45/dist/lenis.min.js"></script>
+
 <!-- Shared Client-side Javascript Layers -->
 <script>
+    // Initialize Lenis Smooth Scroll globally
+    const lenis = new Lenis({
+        lerp: 0.1,
+        smoothWheel: true,
+        smoothTouch: false
+    });
+
+    // Dispatch Lenis scroll position to page-level templates
+    lenis.on('scroll', (e) => {
+        if (window.onCineScroll) {
+            window.onCineScroll(e.scroll);
+        }
+    });
+
+    function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
     // Watchlist state manager utilizing localStorage
     const CineWatchlist = {
         STORAGE_KEY: "cinematch_saved_titles",
