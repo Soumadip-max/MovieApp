@@ -205,7 +205,7 @@
 </aside>
 
 <!-- TopNavBar Component -->
-<header class="sticky top-0 z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full bg-surface/80 backdrop-blur-md shadow-sm border-b border-white/10 md:ml-64 md:w-[calc(100%-16rem)]">
+<header class="sticky top-0 z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full bg-surface shadow-sm border-b border-white/10 md:ml-64 md:w-[calc(100%-16rem)]">
     <!-- Mobile Brand Logo -->
     <div class="md:hidden flex items-center gap-2">
         <span class="material-symbols-outlined text-on-tertiary-container">movie</span>
@@ -238,7 +238,7 @@
 </main>
 
 <!-- Mobile Bottom Navigation Shell -->
-<nav class="fixed bottom-0 left-0 w-full bg-surface/90 backdrop-blur-xl border-t border-white/5 flex justify-around items-center py-3 z-50 md:hidden">
+<nav class="fixed bottom-0 left-0 w-full bg-surface border-t border-white/5 flex justify-around items-center py-3 z-50 md:hidden">
     <a class="flex flex-col items-center gap-1 {% if active_page == 'home' %}text-on-tertiary-container{% else %}text-on-surface-variant hover:text-on-surface{% endif %}" href="/">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' {% if active_page == 'home' %}1{% else %}0{% endif %};">home</span>
         <span class="text-[10px] {% if active_page == 'home' %}font-bold{% else %}font-medium{% endif %}">Home</span>
@@ -267,24 +267,40 @@
 <!-- Shared Client-side Javascript Layers -->
 <script>
     // Initialize Lenis Smooth Scroll globally
-    const lenis = new Lenis({
-        lerp: 0.1,
-        smoothWheel: true,
-        smoothTouch: false
-    });
-
-    // Dispatch Lenis scroll position to page-level templates
-    lenis.on('scroll', (e) => {
-        if (window.onCineScroll) {
-            window.onCineScroll(e.scroll);
-        }
-    });
-
-    function raf(time) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
+    // Disable automatic browser scroll restoration to prevent page-load shifting
+    if (history.scrollRestoration) {
+        history.scrollRestoration = 'manual';
     }
-    requestAnimationFrame(raf);
+
+    let lenis = null;
+    if (typeof Lenis !== 'undefined') {
+        lenis = new Lenis({
+            lerp: 0.1,
+            smoothWheel: true,
+            smoothTouch: false
+        });
+
+        // Reset scroll positions immediately to ensure the page starts at the top
+        if (!window.searchScrollActive) {
+            window.scrollTo(0, 0);
+            lenis.scrollTo(0, { immediate: true });
+        }
+
+        // Dispatch Lenis scroll position to page-level templates
+        lenis.on('scroll', (e) => {
+            if (window.onCineScroll) {
+                window.onCineScroll(e.scroll);
+            }
+        });
+
+        function raf(time) {
+            if (lenis) lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+    } else {
+        console.warn("Lenis library is not loaded. Falling back to default browser scroll.");
+    }
 
     // Watchlist state manager utilizing localStorage
     const CineWatchlist = {

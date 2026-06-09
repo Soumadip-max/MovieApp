@@ -204,8 +204,10 @@
         container.appendChild(panel);
     }
 
-    function removeWatchlistItem(title) {
+    function removeWatchlistItem(event, button) {
         event.stopPropagation();
+        const card = button.closest(".poster-card");
+        const title = decodeURIComponent(card.getAttribute("data-title"));
         if (activeCollection === "All") {
             CineWatchlist.remove(title);
             // Also call remove from all server-side lists
@@ -306,6 +308,7 @@
             list.forEach((m, i) => {
                 const card = document.createElement("div");
                 card.className = "poster-card relative group cursor-pointer aspect-[2/3] rounded-xl overflow-hidden bg-surface-container border border-white/5 hover:border-on-tertiary-container/30 hover:shadow-2xl";
+                card.setAttribute("data-title", encodeURIComponent(m.title));
                 card.onclick = () => alert(`${m.title} (${m.year})\n⭐ Rating: ${m.rating}\n\nPlot: ${m.plot}`);
                 
                 const coverUrl = COVER_URLS[i % COVER_URLS.length];
@@ -322,7 +325,7 @@
                         
                         <div class="flex gap-2">
                             <button onclick="event.stopPropagation(); alert('Launching player...')" class="flex-grow py-2 bg-white text-black font-extrabold rounded-lg text-[10px] uppercase active:scale-95 transition-all">Watch Now</button>
-                            <button onclick="removeWatchlistItem('${m.title}')" class="p-2 glass-panel rounded-lg text-white hover:bg-on-tertiary-container hover:text-white transition-all flex items-center justify-center" title="Remove from Watchlist">
+                            <button onclick="removeWatchlistItem(event, this)" class="p-2 glass-panel rounded-lg text-white hover:bg-on-tertiary-container hover:text-white transition-all flex items-center justify-center" title="Remove from Watchlist">
                                 <span class="material-symbols-outlined text-xs">remove</span>
                             </button>
                         </div>

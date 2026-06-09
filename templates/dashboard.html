@@ -133,6 +133,22 @@
 
     let currentMovieDetail = null;
 
+    // Setup a dynamic IntersectionObserver for lazy loading posters in dashboard
+    const dashboardObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                const title = img.getAttribute("data-title");
+                const fallback = img.getAttribute("data-fallback");
+                loadRealPoster(title, img, fallback);
+                observer.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: "100px 0px", // Preload slightly before they scroll into view
+        threshold: 0.01
+    });
+
     function loadDashboardData() {
         fetch('/api/dashboard')
             .then(res => res.json())
@@ -162,11 +178,12 @@
             const cover = MOCK_COVERS[i % MOCK_COVERS.length];
             const card = document.createElement("div");
             card.className = "flex-none w-48 md:w-60 group cursor-pointer";
-            card.onclick = () => showMovieDetail(movie);
+            card.setAttribute("data-movie", encodeURIComponent(JSON.stringify(movie)));
+            card.onclick = () => showMovieDetail(card);
             
             card.innerHTML = `
                 <div class="relative aspect-[2/3] rounded-xl overflow-hidden mb-3 border border-white/5 shadow-md">
-                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 lazy-dash-${elemId}-${i}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'%3E%3C/svg%3E" alt="${movie.title}"/>
+                    <img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 lazy-dash-cover" data-title="${movie.title}" data-fallback="${cover}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 3'%3E%3C/svg%3E" alt="${movie.title}"/>
                     <div class="absolute top-3 right-3 px-2.5 py-0.5 bg-on-tertiary-container text-white text-[10px] font-extrabold rounded shadow-lg tracking-wider">${movie.match}% MATCH</div>
                     
                     <!-- Watchlist overlay checkmark -->
@@ -175,8 +192,8 @@
                     </div>
 
                     <div class="absolute inset-0 bg-black/60 flex items-center justify-center gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button onclick="toggleWatchlist(event, this, '${movie.title}', '${movie.genres}', '${movie.year}', '${movie.type}', '${movie.rating}', '${movie.plot}')" class="dash-watchlist-btn w-10 h-10 rounded-full ${isSaved ? 'bg-on-tertiary-container' : 'bg-white/20'} backdrop-blur-md flex items-center justify-center hover:bg-on-tertiary-container transition-colors"><span class="material-symbols-outlined text-white text-sm">bookmark</span></button>
-                        <button onclick="likeMovie(event, '${movie.title}', 1)" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-emerald-600 transition-colors"><span class="material-symbols-outlined text-white text-sm">thumb_up</span></button>
+                        <button onclick="toggleWatchlist(event, this)" class="dash-watchlist-btn w-10 h-10 rounded-full ${isSaved ? 'bg-on-tertiary-container' : 'bg-white/20'} backdrop-blur-md flex items-center justify-center hover:bg-on-tertiary-container transition-colors"><span class="material-symbols-outlined text-white text-sm">bookmark</span></button>
+                        <button onclick="likeMovie(event, this, 1)" class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center hover:bg-emerald-600 transition-colors"><span class="material-symbols-outlined text-white text-sm">thumb_up</span></button>
                     </div>
                 </div>
                 <h4 class="font-title-md text-on-surface truncate pr-2 font-bold text-sm md:text-base">${movie.title}</h4>
@@ -184,35 +201,38 @@
             `;
             shelf.appendChild(card);
             
-            const img = card.querySelector(`.lazy-dash-${elemId}-${i}`);
-            loadRealPoster(movie.title, img, cover);
+            const img = card.querySelector(`.lazy-dash-cover`);
+            dashboardObserver.observe(img);
         });
     }
 
-    function toggleWatchlist(event, button, title, genres, year, type, rating, plot) {
+    function toggleWatchlist(event, button) {
         event.stopPropagation();
         const card = button.closest(".group");
+        const movie = JSON.parse(decodeURIComponent(card.getAttribute("data-movie")));
         const badge = card.querySelector(".badge");
         
-        if (CineWatchlist.has(title)) {
-            CineWatchlist.remove(title);
+        if (CineWatchlist.has(movie.title)) {
+            CineWatchlist.remove(movie.title);
             button.classList.remove("bg-on-tertiary-container");
             button.classList.add("bg-white/20");
             if (badge) badge.style.display = "none";
         } else {
-            CineWatchlist.add({ title, genres, year, type, rating, plot });
+            CineWatchlist.add(movie);
             button.classList.add("bg-on-tertiary-container");
             button.classList.remove("bg-white/20");
             if (badge) badge.style.display = "flex";
         }
     }
 
-    function likeMovie(event, title, status) {
+    function likeMovie(event, button, status) {
         event.stopPropagation();
+        const card = button.closest(".group");
+        const movie = JSON.parse(decodeURIComponent(card.getAttribute("data-movie")));
         fetch('/api/like', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ title: title, liked: status })
+            body: JSON.stringify({ title: movie.title, liked: status })
         })
         .then(res => res.json())
         .then(data => {
@@ -221,7 +241,8 @@
         });
     }
 
-    function showMovieDetail(movie) {
+    function showMovieDetail(card) {
+        const movie = JSON.parse(decodeURIComponent(card.getAttribute("data-movie")));
         currentMovieDetail = movie;
         document.getElementById("modal-title").textContent = movie.title;
         document.getElementById("modal-meta").textContent = `${movie.year} • ${movie.type} • ${movie.runtime} mins`;
