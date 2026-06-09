@@ -131,6 +131,51 @@
             text-shadow: 0 0 10px rgba(229, 9, 20, 0.6);
         }
         
+        /* Premium Sidebar Links */
+        .sidebar-link {
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border: 1px solid transparent;
+        }
+        .sidebar-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 25%;
+            height: 50%;
+            width: 3px;
+            background-color: #E50914;
+            border-radius: 99px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .sidebar-link:hover::before {
+            opacity: 0.5;
+            height: 50%;
+            top: 25%;
+        }
+        .sidebar-link.active-link::before {
+            opacity: 1;
+            height: 60%;
+            top: 20%;
+        }
+        .sidebar-link.active-link {
+            background: linear-gradient(90deg, rgba(229, 9, 20, 0.15) 0%, rgba(229, 9, 20, 0.02) 100%);
+            border-color: rgba(229, 9, 20, 0.2) !important;
+            color: #ffffff !important;
+        }
+
+        /* Pulsing Skeleton Loader Animation */
+        .skeleton-pulse {
+            background: linear-gradient(90deg, #181a1a 25%, #282a2a 50%, #181a1a 75%);
+            background-size: 200% 100%;
+            animation: skeleton-pulse-anim 1.5s infinite linear;
+        }
+        @keyframes skeleton-pulse-anim {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
         /* Lenis Smooth Scroll Styles */
         html.lenis, html.lenis body {
             height: auto;
@@ -165,27 +210,27 @@
     </div>
     
     <nav class="flex-1 space-y-2">
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'home' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'home' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/">
             <span class="material-symbols-outlined {% if active_page == 'home' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'home' %}1{% else %}0{% endif %};">home</span>
             <span class="font-body-md text-body-md">Home</span>
         </a>
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'dashboard' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/dashboard">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'dashboard' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/dashboard">
             <span class="material-symbols-outlined {% if active_page == 'dashboard' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'dashboard' %}1{% else %}0{% endif %};">dashboard</span>
             <span class="font-body-md text-body-md">Dashboard</span>
         </a>
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'genres' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/genres">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'genres' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/genres">
             <span class="material-symbols-outlined {% if active_page == 'genres' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'genres' %}1{% else %}0{% endif %};">movie_filter</span>
             <span class="font-body-md text-body-md">Genres</span>
         </a>
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'eras' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/eras">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'eras' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/eras">
             <span class="material-symbols-outlined {% if active_page == 'eras' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'eras' %}1{% else %}0{% endif %};">history_toggle_off</span>
             <span class="font-body-md text-body-md">Eras</span>
         </a>
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'chatbot' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/chatbot">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'chatbot' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/chatbot">
             <span class="material-symbols-outlined {% if active_page == 'chatbot' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'chatbot' %}1{% else %}0{% endif %};">forum</span>
             <span class="font-body-md text-body-md">AI Chatbot</span>
         </a>
-        <a class="flex items-center gap-4 p-3 rounded-lg transition-all duration-300 group hover:translate-x-1 {% if active_page == 'watchlist' %}bg-secondary-container text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/50 hover:text-on-surface{% endif %}" href="/watchlist">
+        <a class="flex items-center gap-4 p-3 rounded-lg sidebar-link {% if active_page == 'watchlist' %}active-link text-white font-bold shadow-md{% else %}text-on-surface-variant hover:bg-surface-bright/30 hover:text-on-surface hover:translate-x-1{% endif %}" href="/watchlist">
             <span class="material-symbols-outlined {% if active_page == 'watchlist' %}text-on-tertiary-container{% endif %}" style="font-variation-settings: 'FILL' {% if active_page == 'watchlist' %}1{% else %}0{% endif %};">bookmark</span>
             <span class="font-body-md text-body-md">Watchlist</span>
             <span id="nav-watchlist-count" class="ml-auto bg-on-tertiary-container text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full hidden">0</span>

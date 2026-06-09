@@ -859,14 +859,15 @@ def api_chatbot():
     
     # Check if the message is a greeting or general conversational input
     clean_msg = re.sub(r'[^\w\s]', '', message.lower().strip())
-    greetings = {'hello', 'hi', 'hey', 'greetings', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening', 'help', 'who are you', 'what is this'}
+    greetings = {'hello', 'hi', 'hey', 'greetings', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening'}
     words = clean_msg.split()
     is_greeting = False
+    has_greeting_word = any(w in greetings for w in words) if words else False
     
     if words:
         first_word = words[0]
-        if first_word in greetings or clean_msg in greetings or clean_msg.startswith('who are you') or clean_msg.startswith('what is this') or clean_msg.startswith('how are you'):
-            # It's only a greeting if there is no search intent detected
+        if first_word in greetings or clean_msg in greetings or clean_msg.startswith('who are you') or clean_msg.startswith('what is this') or clean_msg.startswith('how are you') or clean_msg.startswith('help'):
+            # It's only a pure greeting if there is no search intent detected
             search_intent = False
             if nlp_filters['genres'] or nlp_filters['era'] or nlp_filters['similar_movie'] or nlp_filters['keywords'] or nlp_filters['max_runtime'] < 240:
                 search_intent = True
@@ -888,15 +889,36 @@ def api_chatbot():
                 'sci', 'fi', 'science', 'fiction', 'scifi', 'thriller', 'suspense', 'action', 
                 'comedy', 'comedies', 'funny', 'drama', 'dramas', 'romance', 'romantic', 'love', 
                 'horror', 'scary', 'creepy', 'documentary', 'documentaries', 'family', 'kids', 
-                'animation', 'animated', 'anime', 'adventure'
+                'animation', 'animated', 'anime', 'adventure', 'biopic', 'biographical'
             }
             conversational_stop_words = {
-                'suggest', 'recommend', 'find', 'show', 'give', 'me', 'a', 'some', 'movies', 'movie', 
-                'films', 'film', 'about', 'genre', 'genres', 'suggestion', 'suggestions', 'please', 
-                'search', 'for', 'like', 'similar', 'to', 'hi', 'hello', 'hey', 'greetings', 'yo', 
-                'sup', 'good', 'morning', 'afternoon', 'evening', 'any', 'of', 'the', 'with', 'want', 
-                'look', 'looking', 'in', 'on', 'at', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 
-                'have', 'has', 'had', 'do', 'does', 'did', 'can', 'could', 'would', 'should'
+                # Pronouns
+                'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 
+                'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 'herself', 
+                'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves',
+                # Common request verbs
+                'suggest', 'suggests', 'suggested', 'suggesting', 'suggestion', 'suggestions',
+                'recommend', 'recommends', 'recommended', 'recommending', 'recommendation', 'recommendations',
+                'find', 'finds', 'finding', 'found', 'show', 'shows', 'showed', 'showing',
+                'give', 'gives', 'giving', 'get', 'gets', 'getting', 'got', 'search', 'searches', 'searching',
+                'want', 'wants', 'wanted', 'need', 'needs', 'prefer', 'prefers', 'please', 'thanks', 'thank',
+                # Media terms
+                'movie', 'movies', 'film', 'films', 'show', 'shows', 'series', 'season', 'seasons',
+                'watch', 'watching', 'watched', 'list', 'lists', 'catalog', 'recommendations',
+                # Articles and prepositions
+                'a', 'an', 'the', 'some', 'any', 'all', 'every', 'each', 'no', 'nor', 'not', 'only',
+                'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through', 
+                'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 
+                'on', 'off', 'over', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 
+                'when', 'where', 'why', 'how', 'who', 'which', 'whose', 'whom',
+                # Conjunctions
+                'and', 'or', 'but', 'so', 'yet', 'nor', 'because', 'as', 'until', 'while',
+                # Auxiliary/Helping verbs
+                'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'having', 
+                'do', 'does', 'did', 'doing', 'can', 'could', 'would', 'should', 'will', 'shall', 'may', 'might', 'must',
+                # Time / conversational fill
+                'tonight', 'today', 'now', 'just', 'like', 'similar', 'good', 'best', 'great', 'awesome',
+                'top', 'rated', 'popular', 'trending', 'hi', 'hello', 'hey', 'greetings', 'yo', 'sup'
             }
             stop_words = genre_stop_words.union(conversational_stop_words)
             
@@ -948,6 +970,7 @@ def api_chatbot():
                 system_instruction = (
                     "You are CineMatch AI, a premium and friendly movie discovery assistant.\n"
                     "The user is asking for recommendations, looking for a movie, or asking a question.\n"
+                    "If the user query contains or starts with a greeting (like 'hi', 'hello', 'hey'), always greet them back warmly (e.g., 'Hello! I would be happy to help you with that.') before addressing their search query.\n"
                     "You must recommend only movies that are present in the Database Movie Context provided below.\n"
                     "Do NOT recommend external movies that are not present in the provided context list.\n"
                     "Always format movie names in bold like **Inception** (with double asterisks) so the UI can format them correctly.\n"
@@ -983,19 +1006,43 @@ def api_chatbot():
             )
             results = []
         else:
+            # Check if user query has greeting to prepend friendly prefix
+            greeting_prefix = ""
+            if has_greeting_word:
+                greeting_prefix = "Hello! I'd be happy to help you find some movies. "
+                
             if results:
-                reply_text = f"I've analyzed your query and scanned our CineMatch catalog. Here are several films matching your interests:\n\n"
+                reply_text = greeting_prefix + f"I've analyzed your query and scanned our CineMatch catalog. Here are several films matching your interests:\n\n"
                 for idx, m in enumerate(results):
                     reply_text += f"{idx+1}. **{m['title']}** ({m['year']}) - ⭐ {m['rating']} | {m['match']}% Match\n"
                     reply_text += f"   *Genre*: {m['genres']} | *Plot*: {m['plot'][:100]}...\n\n"
                 reply_text += "Would you like me to add any of these to your watchlists?"
             else:
                 rec_list = query_movies(limit=3, user_id=user_id)
-                reply_text = "I couldn't find matches that meet all of those criteria in our netflix titles, but here are some top-rated films you might enjoy:\n\n"
+                reply_text = greeting_prefix + "I couldn't find matches that meet all of those criteria in our netflix titles, but here are some top-rated films you might enjoy:\n\n"
                 for idx, m in enumerate(rec_list):
                     reply_text += f"{idx+1}. **{m['title']}** ({m['year']}) - ⭐ {m['rating']}\n"
                 reply_text += "\nFeel free to adjust the runtime or try searching in another genre!"
                 results = rec_list
+                
+    # Compute display_genre for all returned movies
+    if results:
+        for m in results:
+            m_genres_str = m.get('genres', '')
+            explanation = m.get('explanation', {})
+            genre_matched_list = explanation.get('genre_match', [])
+            
+            if genre_matched_list:
+                matched = genre_matched_list[0].lower()
+                full_genres = [g.strip() for g in m_genres_str.split(',')]
+                found = None
+                for fg in full_genres:
+                    if matched in fg.lower():
+                        found = fg
+                        break
+                m['display_genre'] = found if found else genre_matched_list[0]
+            else:
+                m['display_genre'] = m_genres_str.split(',')[0].strip() if m_genres_str else "General"
             
     return jsonify({
         'reply': reply_text,
